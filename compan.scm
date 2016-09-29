@@ -33,10 +33,15 @@
   ;; TODO: on windows platforms we'd need to convert slashes
   ;; to file-name-separator-string. On the other hand, we'd need
   ;; a windows platform to test 
-  (cond ((string-match "^[^:]*://(.*)$" url)
+  (cond ((string-match "^[^:]*://*(.*)$" url)
 	 => (lambda (ms)
-	      (let ((directory (match:substring ms 1)))
-		(apply path-join COMPAN-DIRECTORY directory subdirectory*))))
+	      (let* ((directory (match:substring ms 1))
+		     (full-path (apply path-join COMPAN-DIRECTORY
+				       directory subdirectory*)))
+		(cond ((string-match "^(.*)\\.git$" full-path)
+		       => (lambda (ms) (match:substring ms 1)))
+		      (else
+		       full-path)))))
 	(else
 	 (throw 'invalid-url url))))
 
